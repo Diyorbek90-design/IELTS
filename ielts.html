@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English AI Trainer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --bg: #0c0c10;
+  --card: #13131a;
+  --card2: #1a1a24;
+  --border: #252535;
+  --accent: #6c63ff;
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --text: #e2e2f0;
+  --muted: #6060a0;
+  --char-color: #6c63ff;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── LANDING ── */
+#landing {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 48px;
+}
+
+.hero-title {
+  text-align: center;
+}
+.hero-title h1 {
+  font-size: clamp(36px,7vw,72px);
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1;
+}
+.hero-title h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, #6c63ff, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-title p {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+/* MODE CARDS */
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.mode-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 24px;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+
+.mode-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--mode-color, var(--accent));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.mode-card:hover { border-color: var(--mode-color, var(--accent)); transform: translateY(-3px); }
+.mode-card:hover::before { opacity: 1; }
+
+.mode-icon { font-size: 40px; margin-bottom: 14px; display: block; }
+.mode-name { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.mode-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.mode-tag {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  background: rgba(108,99,255,0.15);
+  color: var(--mode-color, var(--accent));
+  border: 1px solid rgba(108,99,255,0.25);
+}
+
+/* ── SETUP ── */
+#setup {
+  display: none;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 32px;
+}
+
+.back-btn {
+  position: fixed;
+  top: 20px; left: 20px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+  z-index: 999;
+}
+.back-btn:hover { border-color: var(--accent); color: var(--text); }
+
+.setup-title { text-align: center; }
+.setup-title h2 { font-size: 28px; font-weight: 700; }
+.setup-title p { color: var(--muted); margin-top: 6px; font-size: 14px; }
+
+.setup-section-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 12px;
+}
+
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 580px;
+}
+
+.char-card {
+  padding: 18px;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  background: var(--card);
+  transition: all 0.2s;
+}
+.char-card:hover { border-color: var(--char-color); background: var(--card2); }
+.char-card.selected { border-color: var(--char-color); background: rgba(108,99,255,0.08); }
+
+.char-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.char-emo { font-size: 26px; }
+.char-name { font-weight: 600; font-size: 15px; }
+.char-vibe {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(108,99,255,0.15);
+  color: var(--char-color);
+  font-family: 'JetBrains Mono', monospace;
+  margin-left: auto;
+}
+.char-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+.input-mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 580px;
+}
+
+.input-mode-card {
+  padding: 20px;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  background: var(--card);
+  transition: all 0.2s;
+  text-align: center;
+}
+.input-mode-card:hover { border-color: var(--accent); }
+.input-mode-card.selected { border-color: var(--accent); background: rgba(108,99,255,0.08); }
+.input-mode-card .icon { font-size: 32px; margin-bottom: 8px; }
+.input-mode-card .label { font-size: 15px; font-weight: 600; }
+.input-mode-card .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.start-btn {
+  padding: 16px 56px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.start-btn:hover {
+  background: #8076ff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(108,99,255,0.35);
+}
+
+/* ── SESSION ── */
+#session {
+  display: none;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.session-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.char-avatar {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.session-char-info { flex: 1; }
+.session-char-name { font-size: 14px; font-weight: 600; }
+.session-char-status { font-size: 12px; color: var(--char-color); display: flex; align-items: center; gap: 5px; }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: livePulse 2s infinite; }
+@keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.header-actions { display: flex; gap: 8px; }
+
+.icon-btn {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.icon-btn:hover { border-color: var(--accent); }
+.icon-btn.active { border-color: var(--accent); background: rgba(108,99,255,0.15); }
+.icon-btn.muted { opacity: 0.35; }
+
+/* VOICE SESSION */
+#voiceSession {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 40px 20px;
+}
+
+.voice-orb-wrap {
+  position: relative;
+  width: 180px; height: 180px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.orb-ring {
+  position: absolute;
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(108,99,255,0.2);
+  animation: orbRing 3s infinite;
+}
+.orb-ring:nth-child(2) { animation-delay: 1s; width: 120%; height: 120%; top: -10%; left: -10%; }
+@keyframes orbRing {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.05); opacity: 0.2; }
+  100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+.voice-orb {
+  width: 130px; height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #8076ff, #6c63ff, #4a3fff);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 50px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 0 40px rgba(108,99,255,0.4);
+  position: relative;
+  z-index: 2;
+  border: none;
+}
+
+.voice-orb.listening {
+  background: radial-gradient(circle at 35% 35%, #f472b6, #ef4444, #dc2626);
+  box-shadow: 0 0 60px rgba(239,68,68,0.5);
+  animation: orbPulse 0.8s infinite;
+}
+
+.voice-orb.speaking {
+  animation: orbSpeak 0.6s infinite alternate;
+}
+
+@keyframes orbPulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+@keyframes orbSpeak {
+  from { transform: scale(1); box-shadow: 0 0 40px rgba(108,99,255,0.4); }
+  to { transform: scale(1.04); box-shadow: 0 0 70px rgba(108,99,255,0.7); }
+}
+
+.voice-status {
+  text-align: center;
+}
+.voice-status .status-text {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.voice-status .status-hint {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* LIVE TRANSCRIPT BUBBLE */
+.live-transcript {
+  max-width: 480px;
+  width: 100%;
+  min-height: 60px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 20px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+  text-align: center;
+  transition: all 0.3s;
+  font-style: italic;
+}
+
+.live-transcript.has-text {
+  color: var(--text);
+  font-style: normal;
+  border-color: rgba(108,99,255,0.3);
+}
+
+/* RESPONSE BUBBLE */
+.response-bubble {
+  max-width: 480px;
+  width: 100%;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--char-color);
+  border-radius: 16px;
+  padding: 16px 20px;
+  font-size: 15px;
+  line-height: 1.7;
+  display: none;
+}
+
+.response-bubble.visible { display: block; animation: slideUp 0.3s ease; }
+
+/* SOUND WAVE */
+.sound-wave {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.sound-wave.active { opacity: 1; }
+.sound-wave span {
+  width: 4px;
+  background: var(--char-color);
+  border-radius: 2px;
+  animation: waveBar 0.8s infinite ease-in-out;
+}
+.sound-wave span:nth-child(1){height:8px;animation-delay:0s}
+.sound-wave span:nth-child(2){height:18px;animation-delay:0.08s}
+.sound-wave span:nth-child(3){height:12px;animation-delay:0.16s}
+.sound-wave span:nth-child(4){height:22px;animation-delay:0.12s}
+.sound-wave span:nth-child(5){height:16px;animation-delay:0.04s}
+.sound-wave span:nth-child(6){height:10px;animation-delay:0.2s}
+.sound-wave span:nth-child(7){height:20px;animation-delay:0.1s}
+@keyframes waveBar {
+  0%,100%{transform:scaleY(0.4)}
+  50%{transform:scaleY(1.1)}
+}
+
+/* TEXT SESSION */
+#textSession {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.chat-messages::-webkit-scrollbar{width:4px}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.chat-msg { display: flex; gap: 10px; max-width: 82%; animation: slideUp 0.25s ease; }
+.chat-msg.ai { align-self: flex-start; }
+.chat-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.msg-ava {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.msg-body {}
+.msg-who { font-size: 11px; color: var(--muted); margin-bottom: 4px; font-family:'JetBrains Mono',monospace; }
+.chat-msg.ai .msg-who { color: var(--char-color); }
+
+.msg-bub {
+  padding: 12px 15px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.65;
+  border: 1px solid var(--border);
+}
+.chat-msg.ai .msg-bub { background: var(--card); border-radius: 4px 14px 14px 14px; }
+.chat-msg.user .msg-bub { background: var(--card2); border-radius: 14px 4px 14px 14px; }
+
+.feedback-bub {
+  margin-top: 8px;
+  padding: 12px 15px;
+  border-radius: 10px;
+  background: rgba(108,99,255,0.07);
+  border: 1px solid rgba(108,99,255,0.2);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.feedback-bub strong { color: var(--text); }
+
+.typing-ind {
+  display:flex; gap:10px; align-items:center;
+  align-self:flex-start; padding: 0 4px;
+}
+.typing-dots {
+  padding: 10px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display:flex; gap:4px;
+}
+.typing-dots span {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--muted); animation:blink 1.2s infinite;
+}
+.typing-dots span:nth-child(2){animation-delay:0.2s}
+.typing-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes blink{0%,100%{opacity:0.3;transform:scale(1)}50%{opacity:1;transform:scale(1.2)}}
+
+.text-input-area {
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--card);
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.text-input-area textarea {
+  flex: 1;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 14px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  resize: none;
+  outline: none;
+  min-height: 46px;
+  max-height: 110px;
+  transition: border-color 0.2s;
+  line-height: 1.5;
+}
+.text-input-area textarea:focus { border-color: var(--accent); }
+.text-input-area textarea::placeholder { color: var(--muted); }
+
+.send-btn {
+  width: 44px; height: 44px;
+  border-radius: 11px;
+  background: var(--accent);
+  border: none; cursor: pointer;
+  color: white; font-size: 18px;
+  display:flex; align-items:center; justify-content:center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.send-btn:hover:not(:disabled) { background:#8076ff; transform:scale(1.05); }
+.send-btn:disabled { opacity:0.35; cursor:not-allowed; }
+
+/* char color themes */
+body.ch-friendly { --char-color: #22c55e; }
+body.ch-strict    { --char-color: #f59e0b; }
+body.ch-sarcastic { --char-color: #f472b6; }
+body.ch-angry     { --char-color: #ef4444; }
+body.ch-chill     { --char-color: #38bdf8; }
+
+/* FEEDBACK TOAST */
+.feedback-toast {
+  position: fixed;
+  bottom: 100px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 13px;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 999;
+  max-width: 340px;
+  text-align: center;
+}
+.feedback-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media(max-width:640px){
+  .mode-grid{ grid-template-columns:1fr; }
+  .char-grid{ grid-template-columns:1fr 1fr; }
+  .chat-msg{ max-width:92%; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── LANDING ─── -->
+<div id="landing">
+  <div class="hero-title">
+    <h1>Ingliz tili<br><em>AI Trainer</em></h1>
+    <p>Hissiyotli AI bilan gaplash. Xatolaringni bilib ol. Tez o'rgan. 🔥</p>
+  </div>
+
+  <div class="mode-grid">
+    <div class="mode-card" style="--mode-color:#38bdf8" onclick="chooseMode('chat')">
+      <span class="mode-icon">💬</span>
+      <div class="mode-name">Oddiy Suhbat</div>
+      <div class="mode-desc">Kundalik hayotda ishlatiladigan inglizcha. Do'st bilan gaplashgandek — erkin, kulgili, real.</div>
+      <span class="mode-tag" style="--mode-color:#38bdf8;background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.3)">Casual English</span>
+    </div>
+    <div class="mode-card" style="--mode-color:#22c55e" onclick="chooseMode('cefr')">
+      <span class="mode-icon">📚</span>
+      <div class="mode-name">CEFR Tayyorlov</div>
+      <div class="mode-desc">A1 dan C2 gacha. Level aniqlash, grammar, vocabulary — rasmiy sertifikat uchun to'g'ri yo'l.</div>
+      <span class="mode-tag" style="--mode-color:#22c55e;background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.3)">A1 → C2</span>
+    </div>
+    <div class="mode-card" style="--mode-color:#a78bfa" onclick="chooseMode('ielts')">
+      <span class="mode-icon">🎓</span>
+      <div class="mode-name">IELTS Speaking</div>
+      <div class="mode-desc">Part 1, 2, 3 — haqiqiy exam formati. Band score, real feedback, qattiq examiner.</div>
+      <span class="mode-tag" style="--mode-color:#a78bfa;background:rgba(167,139,250,0.12);border-color:rgba(167,139,250,0.3)">Band 5→9</span>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SETUP ─── -->
+<div id="setup">
+  <button class="back-btn" onclick="goLanding()">← Orqaga</button>
+
+  <div class="setup-title">
+    <h2 id="setupModeTitle">Suhbat sozlamalari</h2>
+    <p id="setupModeDesc">O'zing uchun qulay xarakter va uslub tanlang</p>
+  </div>
+
+  <div style="width:100%;max-width:580px">
+    <div class="setup-section-label">Xarakter tanlang</div>
+    <div class="char-grid" id="charGrid">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
+  <div style="width:100%;max-width:580px">
+    <div class="setup-section-label">Suhbat uslubi</div>
+    <div class="input-mode-grid">
+      <div class="input-mode-card selected" id="voiceCard" onclick="selectInputMode('voice')">
+        <div class="icon">🎙️</div>
+        <div class="label">Ovozli</div>
+        <div class="hint">Gapir — AI eshitadi va javob beradi</div>
+      </div>
+      <div class="input-mode-card" id="textCard" onclick="selectInputMode('text')">
+        <div class="icon">⌨️</div>
+        <div class="label">Yozma</div>
+        <div class="hint">Yoz — AI o'qiydi va javob beradi</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="start-btn" onclick="startSession()">Boshlash →</button>
+</div>
+
+<!-- ─── SESSION ─── -->
+<div id="session">
+  <div class="session-header">
+    <div class="char-avatar" id="sessAvatar">🤖</div>
+    <div class="session-char-info">
+      <div class="session-char-name" id="sessName">—</div>
+      <div class="session-char-status">
+        <div class="live-dot"></div>
+        <span id="sessStatus">Tayyor</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn active" id="ttsBtn" onclick="toggleTTS()" title="Ovoz">🔊</button>
+      <button class="icon-btn" onclick="goSetup()" title="Sozlamalar">⚙️</button>
+      <button class="icon-btn" onclick="goLanding()" title="Bosh sahifa">🏠</button>
+    </div>
+  </div>
+
+  <!-- VOICE UI -->
+  <div id="voiceSession">
+    <div class="voice-orb-wrap">
+      <div class="orb-ring"></div>
+      <div class="orb-ring"></div>
+      <button class="voice-orb" id="voiceOrb" onclick="handleOrbClick()">🎙️</button>
+    </div>
+
+    <div class="voice-status">
+      <div class="status-text" id="voiceStatusText">Bosish uchun gapiring</div>
+      <div class="status-hint" id="voiceStatusHint">Orb-ga bosing va inglizcha gapiring</div>
+    </div>
+
+    <div class="sound-wave" id="soundWave">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="live-transcript" id="liveTranscript">Sizning gaplaringiz shu yerda ko'rinadi...</div>
+    <div class="response-bubble" id="responseBubble"></div>
+  </div>
+
+  <!-- TEXT UI -->
+  <div id="textSession" style="display:none">
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="text-input-area">
+      <textarea id="chatInput" placeholder="Inglizcha yozing..." rows="1"
+        onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="chatSendBtn" onclick="sendChatMsg()">↑</button>
+    </div>
+  </div>
+</div>
+
+<div class="feedback-toast" id="feedbackToast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let currentMode = '';
+let selectedChar = '';
+let inputMode = 'voice';
+let ttsOn = true;
+let isProcessing = false;
+let history = [];
+
+const CHARS = {
+  chat: [
+    {
+      id: 'chill', name: 'Alex (Chill Bro)', emoji: '😎', vibe: 'Friendly',
+      desc: 'Yaqin do\'st kabi — kulgili, erkin, hech narsa katta gap emas. Xatolaringni hazil bilan tuzatadi.',
+      color: '#38bdf8',
+      prompt: `You are Alex, a chill English-speaking friend helping someone improve their English in casual conversation. You're funny, warm, and relaxed — like a cool older sibling. You mix light humor into every reply. When the user makes grammar or vocabulary mistakes, you naturally use the correct version in YOUR reply (as a model), then add a brief playful note  baqiradi, lekin ichida yaxshi inson. Xatolaringni aytadi — va yana aytadi — va yana...',
+      color: '#ef4444',
+      prompt: `You are Viktor, an extremely impatient and dramatically hot-headed English conversation partner. You get visibly frustrated at grammar mistakes, but in a funny, theatrical way — like a sitcom character. When they make mistakes, you have a SHORT over-dramatic meltdown in Uzbek first ("OH. OH YO'Q. Yana 'I am go' deyapsizmi?! NIMA?!"), then give the correction. Despite your attitude, you secretly want them to succeed — occasionally slip and show it ("...yaxshi aytding, lekin buni menga aytma"). You use ALL CAPS for emphasis. You're like Gordon Ramsay but for English grammar. Respond in English, dramatic reactions/corrections in Uzbek. 3-5 sentences.`
+    },
+    {
+      id: 'sarcastic', name: 'Emma (Sarcastic)', emoji: '😏', vibe: 'Sarcastic',
+      desc: 'Quruq hazil, kinoya — amma haq. Grammatika xatolaringni juda "ulug\'vor" qilib ta\'kidlaydi.',
+      color: '#f472b6',
+      prompt: `You are Emma, a witty and sarcastically brilliant English conversation partner. You have a sharp, dry sense of humor and deliver corrections with theatrical flair. When they make mistakes, you respond with mock amazement or poetic sarcasm in Uzbek ("Voy, 'he don't know' — Shakespeare o'zidan uyalib ketardi"), then give the actual correction. You're funny, not cruel. You occasionally compliment good usage with exaggerated praise ("MANA! Nihoyat! Perfect tense! Men yig'lamoqchiman."). You keep banter going, ask cheeky follow-up questions. Respond in English, sarcastic corrections in Uzbek. 2-4 sentences.`
+    },
+    {
+      id: 'chill2', name: 'Mia (Motivator)', emoji: '🔥', vibe: 'Hype',
+      desc: 'Har bir gapingdan energiya oladi. Rag\'batlantirib yuboradi — amma xatolarni ham ko\'zdan qochirmaydi.',
+      color: '#f59e0b',
+      prompt: `You are Mia, an enthusiastic and wildly encouraging English conversation partner. You celebrate EVERYTHING the user says with genuine hype, but you also catch mistakes and correct them in a motivating way — in Uzbek. ("YESSSS! Deyarli to'g'ri! Faqat 'I have went' emas 'I have gone' — endi siz unstoppable bo'ldingiz!!"). You're like a hype coach who also happens to be an English teacher. Use exclamation marks, emojis in text, high energy. If they say something well, go WILD. Respond in English, corrections/hype in Uzbek. 2-4 sentences.`
+    }
+  ],
+  cefr: [
+    {
+      id: 'strict', name: 'Mr. Collins (Strict)', emoji: '🎩', vibe: 'Strict',
+      desc: 'British English. Grammatika xatosiga toqat yo\'q, amma tushuntiradi. Qattiq lekin adolatli.',
+      color: '#f59e0b',
+      prompt: `You are Mr. Collins, a strict but fair British CEFR English examiner and coach. You assess the user's English level (A1-C2) based on their responses and adjust your questions accordingly. You point out mistakes precisely and explain WHY it's wrong — in Uzbek when needed for clarity. You use proper British expressions. You're demanding but never cruel — you believe in the student. When they do something well, a brief "Well done" suffices. After each exchange, internally assess their CEFR level and occasionally mention it ("Bu javob B1 darajasiga mos keladi"). Corrections and CEFR tips in Uzbek. Responses 3-5 sentences.`
+    },
+    {
+      id: 'chill', name: 'Sofia (Friendly Coach)', emoji: '🌟', vibe: 'Friendly',
+      desc: 'Qo\'llab-quvvatlovchi, sabrli, har xatoni tushuntiradi. CEFR uchun eng yaxshi yo\'l.',
+      color: '#22c55e',
+      prompt: `You are Sofia, a warm and patient CEFR English coach. You assess and improve the user's English from A1 to C2 levels. You explain grammar in simple terms in Uzbek when needed. You track their level and give tips on how to reach the next level. You celebrate progress genuinely. When correcting, you explain the rule behind it in Uzbek ("'Much' va 'many' — countable/uncountable nouns uchun ishlatiladi. Keling, tushuntiray..."). You assign mini-tasks ("Bu gal bir gap ayt va unda 'since' ishlatishga harakat qil"). Corrections and level notes in Uzbek. Warm and encouraging throughout.`
+    },
+    {
+      id: 'sarcastic', name: 'Prof. Rashid (Sarcastic)', emoji: '🧐', vibe: 'Sarcastic',
+      desc: 'Akademik, kinoyali, lekin haq. CEFR darajangizni aniq biladi va aytadi.',
+      color: '#f472b6',
+      prompt: `You are Professor Rashid, a sarcastically brilliant CEFR English assessor. You dramatically react to English level mistakes in Uzbek ("A2 darajasidagi bu xato C1 da'vosini qilayotgan odamdan — ajoyib..."), then give thorough corrections and CEFR-level tips. You're theatrical but deeply knowledgeable. You frequently assess their current CEFR level based on their language use. You ask increasingly challenging questions to push them to their actual level. You have zero tolerance for lazy answers but are secretly delighted when they surprise you. Corrections, level assessments in Uzbek.`
+    },
+    {
+      id: 'angry', name: 'Coach Dima (Jahldor)', emoji: '💢', vibe: 'Jahldor',
+      desc: 'Sabrsiz, baqiroq — amma siz bilan tez o\'sasiz. Xato qilsangiz... omad.',
+      color: '#ef4444',
+      prompt: `You are Coach Dima, an explosively impatient but comedically over-the-top CEFR English drill coach. You dramatically suffer through mistakes ("Bu xato B1 darajasiga XIYONAT! Men nafas ololmayapman!") in Uzbek, but always provide the correct form and explain the rule. Despite your theatrics, your corrections are accurate and helpful. You track their CEFR level and set increasingly harder challenges. You celebrate correct answers with equally dramatic joy. You're like a comedic drill sergeant. Reactions/corrections in Uzbek. High energy throughout.`
+    }
+  ],
+  ielts: [
+    {
+      id: 'strict', name: 'Mr. Davies (Official)', emoji: '🎓', vibe: 'Strict',
+      desc: 'Rasmiy IELTS examiner. Hech narsa kechirmaydi, Band score beradi, real exam muhiti.',
+      color: '#a78bfa',
+      prompt: `You are Mr. Davies, an official IELTS Speaking examiner conducting a real exam. You run Parts 1, 2, and 3 in sequence. You are professional, precise, and give no hints during the exam. After each candidate response, you continue with the next question. When asked for feedback, you give a breakdown of Fluency & Coherence, Lexical Resource, Grammatical Range, Pronunciation — each with a sub-score and overall Band estimate. In your feedback notes, include brief Uzbek explanations for specific errors ("'I am agree' noto'g'ri — 'I agree' deyiladi"). Stay in examiner character throughout. Feedback in English with Uzbek error notes.`
+    },
+    {
+      id: 'sarcastic', name: 'Dr. Park (Sarcastic)', emoji: '😏', vibe: 'Sarcastic',
+      desc: 'IELTS examiner + keskin hazil. Javoblaringizni unutmas qilib tuzatadi.',
+      color: '#f472b6',
+      prompt: `You are Dr. Park, a brilliantly sarcastic IELTS Speaking examiner. You run the exam properly (Parts 1-3) but react to weak vocabulary or grammar with dry, theatrical commentary in Uzbek ("'Very good' — albatta, C2 vocabularysi. Davom eting."). You give accurate Band scores and feedback. In feedback, you're sarcastic but precise — you list actual errors with explanations in Uzbek. You secretly enjoy when candidates do well and let it slip occasionally. You make the exam both terrifying and memorable. Exam in English, reactions/corrections in Uzbek.`
+    },
+    {
+      id: 'angry', name: 'Prof. Tashkentov (Jahldor)', emoji: '😤', vibe: 'Jahldor',
+      desc: 'Sabrsiz IELTS examiner. Har xato uchun alohida munosabat — baland ovozda.',
+      color: '#ef4444',
+      prompt: `You are Professor Tashkentov, a dramatically impatient IELTS examiner who makes every mistake feel like a personal insult — in a hilariously over-the-top way in Uzbek ("'He don't' — YANA! Bu IELTS exam, futbol maydon emas!"). Despite the theatrics, you run the exam correctly (Parts 1-3) and give accurate Band score feedback. Your feedback is thorough — you note each error with the correction in Uzbek, and give sub-scores for each IELTS criterion. You occasionally have a moment of genuine praise that you immediately regret showing. Dramatic reactions in Uzbek, exam conduct in English.`
+    },
+    {
+      id: 'chill', name: 'Ms. Sarah (Supportive)', emoji: '😊', vibe: 'Friendly',
+      desc: 'Qo\'llab-quvvatlovchi IELTS examiner. Real feedback, amma sizni ruhlantirib boradi.',
+      color: '#22c55e',
+      prompt: `You are Ms. Sarah, a warm and supportive IELTS Speaking examiner. You run Parts 1, 2, and 3 professionally. After responses, you ask follow-up questions naturally. When giving feedback, you are encouraging but honest — you note every error with explanation in Uzbek ("'I have visited' yaxshi ishlatdingiz! Lekin 'I am living here since 5 years' emas — 'I have been living here for 5 years' to'g'risi"). You give Band scores with actionable improvement tips in Uzbek. You celebrate good vocabulary choices with genuine warmth.`
+    }
+  ]
+};
+
+// ═══════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════
+function goLanding() {
+  stopAll();
+  show('landing'); hide('setup'); hide('session');
+  history = [];
+}
+
+function goSetup() {
+  stopAll();
+  show('setup'); hide('landing'); hide('session');
+}
+
+function chooseMode(mode) {
+  currentMode = mode;
+  const titles = { chat:'Suhbat sozlamalari', cefr:'CEFR sozlamalari', ielts:'IELTS sozlamalari' };
+  const descs = { chat:'Kundalik inglizcha suhbat uchun xarakter tanlang', cefr:'CEFR tayyorlov uchun coach tanlang', ielts:'IELTS Speaking examiner tanlang' };
+  document.getElementById('setupModeTitle').textContent = titles[mode];
+  document.getElementById('setupModeDesc').textContent = descs[mode];
+
+  const grid = document.getElementById('charGrid');
+  grid.innerHTML = '';
+  selectedChar = '';
+
+  CHARS[mode].forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'char-card';
+    div.setAttribute('data-id', c.id + '_' + mode);
+    div.style.setProperty('--char-color', c.color);
+    div.innerHTML = `
+      <div class="char-top">
+        <span class="char-emo">${c.emoji}</span>
+        <span class="char-name">${c.name}</span>
+        <span class="char-vibe">${c.vibe}</span>
+      </div>
+      <div class="char-desc">${c.desc}</div>`;
+    div.onclick = () => {
+      document.querySelectorAll('.char-card').forEach(x => x.classList.remove('selected'));
+      div.classList.add('selected');
+      selectedChar = c.id;
+      document.body.style.setProperty('--char-color', c.color);
+    };
+    grid.appendChild(div);
+  });
+
+  // auto-select first
+  grid.firstChild?.click();
+
+  show('setup'); hide('landing'); hide('session');
+}
+
+function selectInputMode(mode) {
+  inputMode = mode;
+  document.getElementById('voiceCard').classList.toggle('selected', mode === 'voice');
+  document.getElementById('textCard').classList.toggle('selected', mode === 'text');
+}
+
+function startSession() {
+  if (!selectedChar) return;
+  const char = CHARS[currentMode].find(c => c.id === selectedChar);
+  if (!char) return;
+
+  // set char theme
+  const themeMap = { '#38bdf8':'ch-chill', '#ef4444':'ch-angry', '#f472b6':'ch-sarcastic', '#f59e0b':'ch-strict', '#22c55e':'ch-friendly', '#a78bfa':'ch-cefr' };
+  document.body.className = '';
+  // map by char id
+  const idMap = { chill:'ch-chill', angry:'ch-angry', sarcastic:'ch-sarcastic', strict:'ch-strict', chill2:'ch-chill', friendly:'ch-friendly' };
+  document.body.className = idMap[selectedChar] || '';
+  document.body.style.setProperty('--char-color', char.color);
+
+  document.getElementById('sessAvatar').textContent = char.emoji;
+  document.getElementById('sessName').textContent = char.name;
+  document.getElementById('sessStatus').textContent = 'Tayyor';
+
+  history = [];
+  isProcessing = false;
+
+  show('session'); hide('setup'); hide('landing');
+
+  if (inputMode === 'voice') {
+    document.getElementById('voiceSession').style.display = 'flex';
+    document.getElementById('textSession').style.display = 'none';
+    setVoiceState('idle');
+  } else {
+    document.getElementById('voiceSession').style.display = 'none';
+    document.getElementById('textSession').style.display = 'flex';
+    document.getElementById('chatMessages').innerHTML = '';
+    startTextSession(char);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  TTS
+// ═══════════════════════════════════════════════
+let currentUtterance = null;
+
+function speakText(text) {
+  if (!ttsOn || !window.speechSynthesis) return;
+  stopSpeaking();
+  const clean = text.replace(/\*\*(.*?)\*\*/g,'$1').replace(/[*_~`#]/g,'').replace(/\(.*?\)/g, match => match).trim();
+  const utter = new SpeechSynthesisUtterance(clean);
+
+  const char = CHARS[currentMode]?.find(c => c.id === selectedChar);
+  const cfgMap = {
+    chill:  {pitch:1.1,rate:0.95},
+    angry:  {pitch:0.75,rate:1.2},
+    sarcastic:{pitch:1.05,rate:1.0},
+    strict: {pitch:0.85,rate:0.88},
+    chill2: {pitch:1.15,rate:1.05},
+    friendly:{pitch:1.1,rate:0.95}
+  };
+  const cfg = cfgMap[selectedChar] || {pitch:1,rate:1};
+  utter.pitch = cfg.pitch;
+  utter.rate = cfg.rate;
+
+  const trySpeak = () => {
+    const voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+    if (voices.length) utter.voice = voices[0];
+    utter.onstart = () => { document.getElementById('soundWave')?.classList.add('active'); };
+    utter.onend = utter.onerror = () => { document.getElementById('soundWave')?.classList.remove('active'); setVoiceState('idle'); };
+    currentUtterance = utter;
+    speechSynthesis.speak(utter);
+  };
+
+  if (speechSynthesis.getVoices().length === 0) {
+    speechSynthesis.onvoiceschanged = trySpeak;
+  } else { trySpeak(); }
+}
+
+function stopSpeaking() {
+  window.speechSynthesis?.cancel();
+  document.getElementById('soundWave')?.classList.remove('active');
+}
+
+function stopAll() { stopSpeaking(); stopSTT(); }
+
+function toggleTTS() {
+  ttsOn = !ttsOn;
+  const btn = document.getElementById('ttsBtn');
+  btn.textContent = ttsOn ? '🔊' : '🔇';
+  btn.classList.toggle('muted', !ttsOn);
+  if (!ttsOn) stopSpeaking();
+}
+
+// ═══════════════════════════════════════════════
+//  STT
+// ═══════════════════════════════════════════════
+let recog = null;
+let sttActive = false;
+
+function initSTT() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR();
+  r.lang = 'en-US';
+  r.interimResults = true;
+  r.continuous = false;
+
+  r.onresult = e => {
+    let interim='', final='';
+    for (let i=e.resultIndex;i<e.results.length;i++){
+      const t=e.results[i][0].transcript;
+      if(e.results[i].isFinal) final+=t; else interim+=t;
+    }
+    const lt = document.getElementById('liveTranscript');
+    if (lt) {
+      lt.textContent = final || interim || '';
+      lt.classList.toggle('has-text', !!(final||interim));
+    }
+    if (final) {
+      sttActive = false;
+      setVoiceState('processing');
+      processVoiceInput(final.trim());
+    }
+  };
+
+  r.onerror = e => {
+    sttActive = false;
+    setVoiceState('idle');
+    if (e.error==='not-allowed') showToast('🎙️ Mikrofonga ruxsat bering (brauzer sozlamalaridan)');
+  };
+
+  r.onend = () => {
+    if (sttActive) { sttActive=false; setVoiceState('idle'); }
+  };
+
+  return r;
+}
+
+function startSTT() {
+  stopSpeaking();
+  if (!recog) recog = initSTT();
+  if (!recog) { showToast('Bu brauzer ovozni tanishni qollab-quvvatlamaydi. Chrome ishlatib ko\'ring.'); return; }
+  sttActive = true;
+  setVoiceState('listening');
+  document.getElementById('liveTranscript').textContent = '';
+  document.getElementById('liveTranscript').classList.remove('has-text');
+  try { recog.start(); } catch(e) { sttActive=false; setVoiceState('idle'); }
+}
+
+function stopSTT() {
+  sttActive = false;
+  try { recog?.stop(); } catch(e){}
+}
+
+function handleOrbClick() {
+  if (isProcessing) return;
+  if (sttActive) { stopSTT(); setVoiceState('idle'); return; }
+  startSTT();
+}
+function setVoiceState(state) {
+  const orb = document.getElementById('voiceOrb');
+  const st = document.getElementById('voiceStatusText');
+  const sh = document.getElementById('voiceStatusHint');
+  orb.className = 'voice-orb';
+  if (state==='idle') {
+    orb.textContent='🎙️'; st.textContent='Bosing va gapiring'; sh.textContent='Javob eshitilgach, orb-ga bosib javob bering';
+  } else if (state==='listening') {
+    orb.classList.add('listening'); orb.textContent='🔴';
+    st.textContent='Eshitmoqda...'; sh.textContent='Inglizcha gapiring — tugatgach to\'xtaydi';
+  } else if (state==='processing') {
+    orb.textContent='⏳'; st.textContent='Javob tayyorlanmoqda...'; sh.textContent='AI o\'ylayapti...';
+  } else if (state==='speaking') {
+    orb.classList.add('speaking'); orb.textContent='🔊';
+    st.textContent='AI gapirmoqda...'; sh.textContent='Tugashini kuting yoki bosib to\'xtating';
+  }
+  document.getElementById('sessStatus').textContent = {idle:'Tayyor',listening:'Eshitmoqda',processing:'Javob tayyorlanmoqda',speaking:'Gapirmoqda'}[state] || 'Tayyor';
+}
+
+// ═══════════════════════════════════════════════
+//  AI CALL
+// ═══════════════════════════════════════════════
+function getSystemPrompt() {
+  const char = CHARS[currentMode]?.find(c => c.id === selectedChar);
+  return char?.prompt || '';
+}
+
+async function callAI(userText) {
+  history.push({role:'user', content: userText});
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:600,
+      system: getSystemPrompt(),
+      messages: history
+    })
+  });
+  const data = await res.json();
+  const reply = data.content?.[0]?.text || 'Uzr, xatolik yuz berdi. Qayta urinib ko\'ring.';
+  history.push({role:'assistant', content: reply});
+  return reply;
+}
+
+// ═══════════════════════════════════════════════
+//  VOICE SESSION LOGIC
+// ═══════════════════════════════════════════════
+async function processVoiceInput(text) {
+  if (!text) { setVoiceState('idle'); return; }
+  isProcessing = true;
+  try {
+    const reply = await callAI(text);
+    const rb = document.getElementById('responseBubble');
+    rb.innerHTML = reply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+    rb.classList.add('visible');
+    setVoiceState('speaking');
+    speakText(reply);
+    // after speaking done, reset
+    setTimeout(() => {
+      if (!sttActive) setVoiceState('idle');
+    }, 500);
+  } catch(e) {
+    setVoiceState('idle');
+    showToast('Xatolik yuz berdi. Internetni tekshiring.');
+  }
+  isProcessing = false;
+}
+
+// ═══════════════════════════════════════════════
+//  TEXT SESSION LOGIC
+// ═══════════════════════════════════════════════
+async function startTextSession(char) {
+  // opening message from AI
+  showTyping();
+  try {
+    const opener = `You are starting a new session. Greet the user warmly in character (1-2 sentences) and ask an opening question to start the conversation. Be in character immediately.`;
+    const reply = await callAI(opener);
+    // remove opener from permanent history (it's a meta instruction)
+    history = history.filter(h => h.content !== opener);
+    history.push({role:'assistant', content: reply});
+    hideTyping();
+    appendChatMsg('ai', reply, char);
+    speakText(reply);
+  } catch(e) {
+    hideTyping();
+    appendChatMsg('ai', 'Salom! Boshlaylik.', char);
+  }
+}
+
+async function sendChatMsg() {
+  if (isProcessing) return;
+  const ta = document.getElementById('chatInput');
+  const text = ta.value.trim();
+  if (!text) return;
+  const char = CHARS[currentMode].find(c=>c.id===selectedChar);
+
+  ta.value = ''; autoResize(ta);
+  appendChatMsg('user', text, char);
+
+  isProcessing = true;
+  document.getElementById('chatSendBtn').disabled = true;
+  showTyping();
+
+  try {
+    const reply = await callAI(text);
+    hideTyping();
+    appendChatMsg('ai', reply, char);
+    speakText(reply);
+  } catch(e) {
+    hideTyping();
+    appendChatMsg('ai','Xatolik yuz berdi. Qayta urinib ko\'ring.', char);
+  }
+
+  isProcessing = false;
+  document.getElementById('chatSendBtn').disabled = false;
+}
+
+function appendChatMsg(role, text, char) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+
+  const ava = document.createElement('div');
+  ava.className = 'msg-ava';
+  ava.textContent = role==='ai' ? char.emoji : '🧑';
+
+  const body = document.createElement('div');
+  body.className = 'msg-body';
+
+  const who = document.createElement('div');
+  who.className = 'msg-who';
+  who.textContent = role==='ai' ? char.name : 'Siz';
+
+  const bub = document.createElement('div');
+  bub.className = 'msg-bub';
+  bub.innerHTML = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+
+  body.appendChild(who);
+  body.appendChild(bub);
+  div.appendChild(ava);
+  div.appendChild(body);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const char = CHARS[currentMode]?.find(c=>c.id===selectedChar);
+  const div = document.createElement('div');
+  div.id = 'typingInd';
+  div.className = 'typing-ind';
+  div.innerHTML = `<div class="msg-ava">${char?.emoji||'🤖'}</div><div class="typing-dots"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function hideTyping() {
+  document.getElementById('typingInd')?.remove();
+}
+
+// ═══════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════
+function show(id) { const el=document.getElementById(id); if(el){el.style.display='flex';} }
+function hide(id) { const el=document.getElementById(id); if(el){el.style.display='none';} }
+
+function showToast(msg) {
+  const t = document.getElementById('feedbackToast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+function handleChatKey(e) {
+  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChatMsg(); }
+}
+
+function autoResize(el) {
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,110)+'px';
+}
+
+// init landing display
+document.getElementById('landing').style.display='flex';
+document.getElementById('setup').style.display='none';
+document.getElementById('session').style.display='none';
+</script>
+</body>
+</html>
